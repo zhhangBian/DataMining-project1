@@ -8,8 +8,8 @@ import pandas as pd
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import LabelEncoder, KBinsDiscretizer
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, BaggingClassifier
-from sklearn.metrics import accuracy_score, f1_score, mean_absolute_error, classification_report
+from sklearn.ensemble import *
+from sklearn.metrics import *
 import pickle
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import confusion_matrix, classification_report
@@ -109,10 +109,26 @@ def get_metric(y_true, y_pred):
     result['report'] = classification_report(y_true, y_pred)  # 包含一些常见的分类指标
     result['accuracy'] = accuracy_score(y_true, y_pred)
     # todo: macro average与micro average的区别是什么？应该选择哪个作为最终评价指标？理由是什么？
+    # 宏观平均（Macro-average）：
+    # 定义：宏观平均是将每个类别的指标（如精确度、召回率和F1分数）分别计算出来，然后取它们的算术平均值。
+    # 特点：
+    # - 每个类别的指标被赋予相同的权重，不管类别的大小或频率。
+    # - 如果类别是不平衡的，宏观平均可能会偏向于少数类别。
+    # - 它强调每个类别的性能，特别是少数类别。
+    # 适用场景：当类别数量较少，且每个类别都很重要时，宏观平均是一个不错的选择。
+    #
+    # 微观平均（Micro-average）：
+    # 定义：微观平均是先计算所有类别的总体真正例、假正例和假负例，然后基于这些总数计算指标。
+    # 特点：
+    # - 考虑了所有类别的总体性能，而不是分别计算每个类别。
+    # - 通过汇总所有类别的预测和真实标签来计算，因此对类别的不平衡性更加敏感。
+    # - 它强调整体性能，尤其是大类别。
+    # 适用场景：当类别数量较多，且类别之间存在不平衡性时，微观平均通常更合适
     result['macro_f1_score'] = f1_score(y_true, y_pred, average='macro')
     result['micro_f1_score'] = f1_score(y_true, y_pred, average='micro')
-    # todo: 一般多分类目标之间是无序的，例如[猫，狗，牛，羊]。但本任务的多分类目标之间是有序的，例如正确分类为2，而预估分类为1，尽管也分错了，但是比预估分类为0要好。如何在指标上表现这种有序性？
-    result['mae'] = mean_absolute_error(y_true, y_pred)
+
+    # 改为使用平方项来反映差距，尝试利用有序性
+    result['mae'] = mean_squared_error(y_true, y_pred)
 
     return result
 
@@ -181,9 +197,6 @@ def test(test_data_path, model):
         test_metric['accuracy'], test_metric['micro_f1_score'], test_metric['mae']))
     print(test_metric['report'])
 
-    print(confusion_matrix(y, pred))
-    print(classification_report(y, pred))
-
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -209,6 +222,5 @@ if __name__ == '__main__':
     model_path = os.path.join(args.checkpoint_dir, 'clf_model.pkl')
 
     preprocessor = None
-    # todo: 如果训练耗时较长，可以修改此处逻辑为"如果模型checkpoint已经存在，则直接加载模型，否则重新训练"，方便助教评测
     model = train(train_data_path, model_path, config=args)
     test(test_data_path, model)
