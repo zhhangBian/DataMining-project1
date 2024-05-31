@@ -108,6 +108,25 @@ def get_metric(y_true, y_pred):
     result = dict()
     result['report'] = classification_report(y_true, y_pred)  # 包含一些常见的分类指标
     result['accuracy'] = accuracy_score(y_true, y_pred)
+    result['precision'] = precision_score(y_true, y_pred, average='weighted')
+    result['recall'] = recall_score(y_true, y_pred, average='weighted')
+    result['f1_score_weighted'] = f1_score(y_true, y_pred, average='weighted')
+    result['conf_matrix'] = confusion_matrix(y_true, y_pred)
+    result['roc_auc'] = roc_auc_score(y_true, y_pred, multi_class='ovr')  # 假设是多类问题
+
+    # 打印分类报告，其中包含精确度、召回率、F1分数、支持度（每个类别的样本数量）
+    # print("Classification Report:\n", result['report'])
+    #
+    # git 打印准确率
+    # print("Accuracy:", result['accuracy'])
+    #
+    # 打印精确度、召回率、F1分数、混淆矩阵和ROC-AUC分数
+    # print("Weighted Precision:", result['precision'])
+    # print("Weighted Recall:", result['recall'])
+    # print("Weighted F1 Score:", result['f1_score_weighted'])
+    # print("Confusion Matrix:\n", result['conf_matrix'])
+    # print("ROC-AUC Score:", result['roc_auc'])
+
     # todo: macro average与micro average的区别是什么？应该选择哪个作为最终评价指标？理由是什么？
     # 宏观平均（Macro-average）：
     # 定义：宏观平均是将每个类别的指标（如精确度、召回率和F1分数）分别计算出来，然后取它们的算术平均值。
