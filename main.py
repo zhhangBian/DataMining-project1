@@ -8,8 +8,8 @@ import pandas as pd
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import LabelEncoder, KBinsDiscretizer
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import *
-from sklearn.metrics import *
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, BaggingClassifier
+from sklearn.metrics import accuracy_score, f1_score, mean_absolute_error, classification_report
 import pickle
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import confusion_matrix, classification_report
@@ -24,8 +24,12 @@ class DataPreprocessor:
         self.use_cols = use_cols
 
         # 原始数据中的稠密特征，即已被归一化的特征
-        dense_cols = ['Product_Info_4', 'Ins_Age', 'Ht', 'Wt', 'BMI', 'Employment_Info_1', 'Employment_Info_4',
-                      'Employment_Info_6', 'Insurance_History_5', 'Family_Hist_2', 'Family_Hist_3', 'Family_Hist_4',
+        dense_cols = ['Product_Info_4',
+                      'Ins_Age',
+                      'Ht', 'Wt',
+                      'BMI', 'Employment_Info_1', 'Employment_Info_4',
+                      'Employment_Info_6', 'Insurance_History_5',
+                      'Family_Hist_2', 'Family_Hist_3', 'Family_Hist_4',
                       'Family_Hist_5']
         # 只保留需要使用的特征
         self.dense_cols = [col for col in use_cols if col in dense_cols]
@@ -170,7 +174,7 @@ def load_data(data_path):
                     'InsuredInfo_3', 'InsuredInfo_6', 'Insurance_History_1', 'Insurance_History_2',
                     'Insurance_History_3', 'Insurance_History_4', 'Insurance_History_7', 'Insurance_History_8',
                     'Insurance_History_9', 'Family_Hist_1', 'Medical_History_4', 'Medical_History_6',
-                    'Medical_History_9', 'Medical_History_13', 'Medical_History_16', 'Medical_History_18',
+                    # 'Medical_History_9', 'Medical_History_13', 'Medical_History_16', 'Medical_History_18',
                     'Medical_History_22', 'Medical_History_23', 'Medical_History_30', 'Medical_History_33',
                     'Medical_History_39', 'Medical_History_41', 'Medical_Keyword_3', 'Medical_Keyword_15',
                     'Medical_Keyword_23', 'Medical_Keyword_25', 'Medical_Keyword_48',
@@ -216,6 +220,9 @@ def test(test_data_path, model):
         test_metric['accuracy'], test_metric['micro_f1_score'], test_metric['mae']))
     print(test_metric['report'])
 
+    print(confusion_matrix(y, pred))
+    print(classification_report(y, pred))
+
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -241,5 +248,6 @@ if __name__ == '__main__':
     model_path = os.path.join(args.checkpoint_dir, 'clf_model.pkl')
 
     preprocessor = None
+    # todo: 如果训练耗时较长，可以修改此处逻辑为"如果模型checkpoint已经存在，则直接加载模型，否则重新训练"，方便助教评测
     model = train(train_data_path, model_path, config=args)
     test(test_data_path, model)
